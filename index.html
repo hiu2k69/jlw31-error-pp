@@ -327,7 +327,7 @@
    danh sách tên các tab từ Apps Script để người dùng chọn xem.
    ========================================================================= */
 const CONFIG = {
-  PROJECT_CODE   : "JLW31",
+  PROJECT_CODE   : "{LOT}",
   TITLE_ZH       : "PP试产过程不良统计",
   TITLE_VI_TEMPLATE : "THỐNG KÊ LỖI TRONG QUÁ TRÌNH CHẠY THỬ NGHIỆM PP {LOT}",
   SCRIPT_URL     : "https://script.google.com/macros/s/AKfycbyGQUVjpDrTW52AxOodlfolUNtg_GCVXgDjQ1sdSknNY54B4BWhx5F06StBnb62pPw7/exec",
@@ -337,13 +337,16 @@ const CONFIG = {
 /* ========================================================================= */
 
 function applyConfig(lotName){
-  const displayCode = lotName || CONFIG.PROJECT_CODE;
+  const hasPlaceholder = CONFIG.PROJECT_CODE.indexOf('{LOT}') !== -1;
+  // Trước khi biết lô nào đang chọn (lần chạy đầu tiên), hiện tạm "..." thay vì để nguyên chữ {LOT}
+  const displayCode = lotName || (hasPlaceholder ? '...' : CONFIG.PROJECT_CODE);
+  const resolvedProjectCode = hasPlaceholder ? CONFIG.PROJECT_CODE.replace('{LOT}', displayCode) : CONFIG.PROJECT_CODE;
   const title = CONFIG.TITLE_VI_TEMPLATE.replace('{LOT}', displayCode);
   document.title = displayCode + " " + CONFIG.TITLE_ZH;
   document.getElementById('projectCodeBadge').textContent = displayCode;
   document.getElementById('titleZh').textContent = CONFIG.TITLE_ZH;
   document.getElementById('titleVi').textContent = title;
-  document.getElementById('projectMeta').textContent = CONFIG.PROJECT_CODE;
+  document.getElementById('projectMeta').textContent = resolvedProjectCode;
 }
 applyConfig();
 
