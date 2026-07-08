@@ -75,6 +75,7 @@
     background:#fff; border:1px solid var(--line); border-radius:6px;
     padding:10px 16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between;
   }
+  .conn-left{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
   .status-pill{
     font-size:12px; font-weight:700; padding:5px 10px; border-radius:20px; white-space:nowrap;
   }
@@ -90,16 +91,32 @@
   .btn:hover{transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,0.18);}
   .btn.ghost{background:#fff; color:var(--steel); border:1px solid var(--steel);}
 
-  /* ===== toolbar ===== */
+  .lot-select-wrap{display:flex; align-items:center; gap:8px;}
+  .lot-select-wrap label{font-size:12.5px; font-weight:700; color:var(--sub); white-space:nowrap;}
+  select#lotSelect{
+    font-family:inherit; font-size:13.5px; font-weight:700; color:var(--navy);
+    padding:8px 32px 8px 12px; border-radius:5px; border:1px solid var(--line);
+    background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%233d6b8f"><path d="M5.5 7.5l4.5 5 4.5-5z"/></svg>') no-repeat right 10px center;
+    background-size:14px; appearance:none; -webkit-appearance:none; cursor:pointer; min-width:150px;
+  }
+  select#lotSelect:disabled{opacity:0.55; cursor:not-allowed;}
+
+  /* ===== toolbar / filter ===== */
   .toolbar{
     max-width:1500px; margin:0 auto 14px;
     display:flex; justify-content:flex-start; align-items:center; gap:10px; flex-wrap:wrap;
   }
+  .filter-label{font-size:12.5px; font-weight:700; color:var(--sub); margin-right:2px;}
   .tag{
     font-size:12.5px; padding:6px 12px; border-radius:20px; font-weight:600;
     display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--sub);
+    cursor:pointer; user-select:none; transition:transform .1s, box-shadow .1s, border-color .1s;
   }
+  .tag:hover{transform:translateY(-1px); box-shadow:0 3px 8px rgba(18,38,58,0.10);}
   .tag .dot{width:8px; height:8px; border-radius:50%;}
+  .tag.active{border-color:var(--steel); background:#eaf2f8; color:var(--navy); box-shadow:0 2px 6px rgba(61,107,143,0.18);}
+  .tag.active.tag-ng{border-color:var(--ongoing); background:#fdeceb; color:var(--ongoing);}
+  .tag.active.tag-ok{border-color:var(--ok); background:#e5f4ec; color:var(--ok);}
 
   /* ===== table wrap ===== */
   .table-wrap{
@@ -159,6 +176,26 @@
   footer{max-width:1500px; margin:16px auto 0; color:var(--sub); font-size:12px; text-align:center;}
   .empty-msg{padding:40px; text-align:center; color:var(--sub); font-size:14px;}
 
+  /* ===== skeleton loading ===== */
+  .skeleton-cell{
+    background:linear-gradient(90deg, #e7edf1 25%, #f2f6f8 37%, #e7edf1 63%);
+    background-size:400% 100%;
+    animation:skeleton-shimmer 1.4s ease infinite;
+    border-radius:4px;
+    height:13px;
+  }
+  @keyframes skeleton-shimmer{
+    0%{background-position:100% 50%;}
+    100%{background-position:0 50%;}
+  }
+  .skeleton-img{width:160px; height:120px; border-radius:6px; margin:0 auto;}
+  .skeleton-badge{width:70px; height:24px; border-radius:14px; margin:0 auto;}
+  .skeleton-line + .skeleton-line{margin-top:7px;}
+
+  .toolbar.is-loading, .conn-left.is-loading{
+    opacity:0.6; pointer-events:none;
+  }
+
   @media (max-width:700px){
     .vi{font-size:18px;}
     .code-badge{font-size:20px; padding:8px 14px;}
@@ -168,6 +205,8 @@
     .conn-bar, .toolbar{padding:10px 12px;}
     .tag{font-size:11.5px; padding:5px 10px;}
     .btn{padding:9px 14px; font-size:13px;}
+    select#lotSelect{min-width:0; flex:1;}
+    .lot-select-wrap{width:100%;}
 
     /* Chuyển bảng sang dạng thẻ (card) */
     .table-wrap{overflow-x:visible; border:none; box-shadow:none; background:transparent;}
@@ -221,18 +260,35 @@
   <div class="plate-meta">
     <span>项目 / Dự án: <b id="projectMeta"></b></span>
     <span>更新日期 / Hôm nay: <b id="todayDate"></b></span>
+    <span>批次 / Lô hàng: <b id="lotMeta">-</b></span>
     <span>记录数 / Số dòng: <b id="rowCountLabel">0</b></span>
   </div>
 </div>
 
 <div class="conn-bar">
-  <span class="status-pill off" id="connStatus">Chưa kết nối</span>
-  <button class="btn ghost" onclick="loadFromSheet()">↻ Tải lại từ Sheet</button>
+  <div class="conn-left">
+    <span class="status-pill off" id="connStatus">Chưa kết nối</span>
+    <div class="lot-select-wrap" id="lotSelectWrap">
+      <label for="lotSelect">Lô hàng / 批次:</label>
+      <select id="lotSelect" disabled onchange="onLotChange()">
+        <option value="">-- Đang tải danh sách --</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn ghost" onclick="loadLotList(true)">↻ Tải lại từ Sheet</button>
 </div>
 
-<div class="toolbar">
-  <span class="tag"><span class="dot" style="background:var(--ongoing)"></span> NG - Vẫn còn xảy ra: <b id="cntNG">0</b></span>
-  <span class="tag"><span class="dot" style="background:var(--ok)"></span> OK: <b id="cntOK">0</b></span>
+<div class="toolbar" id="filterBar">
+  <span class="filter-label">Lọc trạng thái / 状态筛选:</span>
+  <span class="tag active" data-filter="ALL" onclick="setFilter('ALL')">
+    Tất cả: <b id="cntALL">0</b>
+  </span>
+  <span class="tag tag-ng" data-filter="NG" onclick="setFilter('NG')">
+    <span class="dot" style="background:var(--ongoing)"></span> NG - Vẫn còn xảy ra: <b id="cntNG">0</b>
+  </span>
+  <span class="tag tag-ok" data-filter="OK" onclick="setFilter('OK')">
+    <span class="dot" style="background:var(--ok)"></span> OK: <b id="cntOK">0</b>
+  </span>
 </div>
 
 <div class="table-wrap">
@@ -266,22 +322,27 @@
        ví dụ: "images/"  ->  sẽ tìm file "images/1.png", "images/2.png"...
      - Nếu ảnh host trên 1 địa chỉ web khác, dùng URL đầy đủ, ví dụ:
        "https://example.com/jlw31-images/"
+
+   Mỗi tab (sheet) trong Google Sheet = 1 lô hàng. Trang sẽ tự lấy
+   danh sách tên các tab từ Apps Script để người dùng chọn xem.
    ========================================================================= */
 const CONFIG = {
   PROJECT_CODE   : "JLW31",
   TITLE_ZH       : "PP试产过程不良统计",
-  TITLE_VI       : "THỐNG KÊ LỖI TRONG QUÁ TRÌNH CHẠY THỬ NGHIỆM PP JLW31",
-  SCRIPT_URL     : "https://script.google.com/macros/s/AKfycbwSZCAMlAazzRv8rDu22X0GAfu9boajRGDXTCmiZ7IHrzyORonpXzI9YiIubnT50X7e/exec",
+  TITLE_VI_TEMPLATE : "THỐNG KÊ LỖI TRONG QUÁ TRÌNH CHẠY THỬ NGHIỆM PP {LOT}",
+  SCRIPT_URL     : "https://script.google.com/macros/s/AKfycbyGQUVjpDrTW52AxOodlfolUNtg_GCVXgDjQ1sdSknNY54B4BWhx5F06StBnb62pPw7/exec",
   IMAGE_BASE_URL : "images/",
   IMAGE_EXT      : ".png"
 };
 /* ========================================================================= */
 
-function applyConfig(){
-  document.title = CONFIG.PROJECT_CODE + " " + CONFIG.TITLE_ZH;
-  document.getElementById('projectCodeBadge').textContent = CONFIG.PROJECT_CODE;
+function applyConfig(lotName){
+  const displayCode = lotName || CONFIG.PROJECT_CODE;
+  const title = CONFIG.TITLE_VI_TEMPLATE.replace('{LOT}', displayCode);
+  document.title = displayCode + " " + CONFIG.TITLE_ZH;
+  document.getElementById('projectCodeBadge').textContent = displayCode;
   document.getElementById('titleZh').textContent = CONFIG.TITLE_ZH;
-  document.getElementById('titleVi').textContent = CONFIG.TITLE_VI;
+  document.getElementById('titleVi').textContent = title;
   document.getElementById('projectMeta').textContent = CONFIG.PROJECT_CODE;
 }
 applyConfig();
@@ -324,30 +385,32 @@ function jsonpRequest(url, timeoutMs){
     const script = document.createElement('script');
     let done = false;
 
-    const cleanup = function(){
-      delete window[cbName];
+    // keepCallback=true: không xóa hàm callback (dùng khi timeout, vì Google Script
+    // có thể vẫn đang tải và sẽ gọi hàm này trễ -> nếu xóa sẽ bị lỗi "not defined")
+    const cleanup = function(keepCallback){
+      if(!keepCallback) delete window[cbName];
       if(script.parentNode) script.parentNode.removeChild(script);
       clearTimeout(timer);
     };
 
     window[cbName] = function(data){
-      if(done) return;
+      if(done) return; // kết quả về trễ sau khi đã timeout -> bỏ qua, không lỗi
       done = true;
-      cleanup();
+      cleanup(false);
       resolve(data);
     };
 
     const timer = setTimeout(function(){
       if(done) return;
       done = true;
-      cleanup();
+      cleanup(true); // giữ lại callback phòng khi script vẫn đang tải dở
       reject(new Error('JSONP timeout'));
-    }, timeoutMs || 15000);
+    }, timeoutMs || 25000);
 
     script.onerror = function(){
       if(done) return;
       done = true;
-      cleanup();
+      cleanup(false);
       reject(new Error('JSONP script load error'));
     };
 
@@ -357,20 +420,153 @@ function jsonpRequest(url, timeoutMs){
   });
 }
 
-async function loadFromSheet(){
+function renderSkeletonRows(n){
+  const tbody = document.getElementById('tbody');
+  let html = '';
+  for(let i=0; i<n; i++){
+    html += `<tr>
+      <td class="stt" data-label="#"><div class="skeleton-cell" style="width:18px;height:14px;margin:2px auto;"></div></td>
+      <td class="img-cell" data-label="Hình ảnh / 图片"><div class="skeleton-cell skeleton-img"></div></td>
+      <td data-label="Vấn đề lỗi / 不良问题">
+        <div class="skeleton-cell skeleton-line" style="width:92%;"></div>
+        <div class="skeleton-cell skeleton-line" style="width:58%;"></div>
+      </td>
+      <td data-label="Nguyên nhân / 原因分析">
+        <div class="skeleton-cell skeleton-line" style="width:85%;"></div>
+        <div class="skeleton-cell skeleton-line" style="width:65%;"></div>
+      </td>
+      <td data-label="Cách khắc phục / 改善对策">
+        <div class="skeleton-cell skeleton-line" style="width:80%;"></div>
+      </td>
+      <td data-label="Ngày xảy ra / 问题发生日期"><div class="skeleton-cell" style="width:75px;"></div></td>
+      <td data-label="Tình trạng / 后续状态"><div class="skeleton-cell skeleton-badge"></div></td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+function setLoadingUI(isLoading){
+  const filterBar = document.getElementById('filterBar');
+  const connLeft = document.querySelector('.conn-left');
+  if(filterBar) filterBar.classList.toggle('is-loading', isLoading);
+  if(connLeft) connLeft.classList.toggle('is-loading', isLoading);
+}
+
+/* ===== state ===== */
+let ALL_ROWS = [];         // dữ liệu thô của lô hàng đang chọn
+let CURRENT_FILTER = 'ALL';
+let CURRENT_LOT = '';
+
+/* Bước 1: lấy danh sách tên các tab (lô hàng) trong Sheet */
+async function loadLotList(forceReload){
   if(!isConfigured()){
     setConnStatus('err','Chưa gắn URL trong code');
     return;
   }
-  setConnStatus('loading','Đang tải...');
+  setConnStatus('loading','Đang tải danh sách lô...');
+  setLoadingUI(true);
+  renderSkeletonRows(4);
+  const select = document.getElementById('lotSelect');
+  select.disabled = true;
+
   try{
-    const rows = await jsonpRequest(CONFIG.SCRIPT_URL);
-    renderRows(Array.isArray(rows) ? rows : []);
+    const url = CONFIG.SCRIPT_URL + '?action=list';
+    const names = await jsonpRequest(url);
+
+    if(!Array.isArray(names) || !names.length){
+      throw new Error('Không có tab nào trong Sheet');
+    }
+
+    const wrap = document.getElementById('lotSelectWrap');
+
+    if(names.length <= 1){
+      // Chỉ có 1 tab -> không cần hiển thị bộ chọn lô hàng
+      wrap.style.display = 'none';
+      select.innerHTML = names.map(function(n){
+        return `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`;
+      }).join('');
+      select.disabled = true;
+      CURRENT_LOT = names[0];
+    } else {
+      wrap.style.display = '';
+      select.innerHTML = names.map(function(n){
+        return `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`;
+      }).join('');
+      select.disabled = false;
+
+      // Giữ lại lô đang chọn nếu vẫn còn tồn tại, không thì lấy tab đầu tiên
+      const keep = (!forceReload && CURRENT_LOT && names.indexOf(CURRENT_LOT) !== -1) ? CURRENT_LOT : names[0];
+      select.value = keep;
+      CURRENT_LOT = keep;
+    }
+
+    await loadLotData(CURRENT_LOT);
+
+  }catch(err){
+    console.error(err);
+    setConnStatus('err','Lỗi kết nối / không lấy được danh sách lô');
+    setLoadingUI(false);
+    document.getElementById('tbody').innerHTML = `<tr><td colspan="7" class="empty-msg">Không tải được dữ liệu. Bấm "↻ Tải lại từ Sheet" để thử lại.</td></tr>`;
+  }
+}
+
+/* Bước 2: lấy dữ liệu của 1 tab (lô hàng) cụ thể */
+async function loadLotData(lotName){
+  setConnStatus('loading','Đang tải dữ liệu lô "' + lotName + '"...');
+  setLoadingUI(true);
+  renderSkeletonRows(4);
+  try{
+    const url = CONFIG.SCRIPT_URL + '?sheet=' + encodeURIComponent(lotName);
+    const rows = await jsonpRequest(url);
+
+    if(rows && rows.error){
+      throw new Error(rows.error);
+    }
+
+    ALL_ROWS = Array.isArray(rows) ? rows : [];
+    document.getElementById('lotMeta').textContent = lotName;
+    applyConfig(lotName);
+    applyFilterAndRender();
     setConnStatus('ok','Đã kết nối');
   }catch(err){
     console.error(err);
-    setConnStatus('err','Lỗi kết nối');
+    setConnStatus('err','Lỗi tải dữ liệu lô hàng');
+    document.getElementById('tbody').innerHTML = `<tr><td colspan="7" class="empty-msg">Không tải được dữ liệu. Bấm "↻ Tải lại từ Sheet" để thử lại.</td></tr>`;
+  }finally{
+    setLoadingUI(false);
   }
+}
+
+function onLotChange(){
+  const select = document.getElementById('lotSelect');
+  CURRENT_LOT = select.value;
+  loadLotData(CURRENT_LOT);
+}
+
+/* giữ hàm cũ để tương thích, nay trỏ tới luồng tải danh sách lô */
+function loadFromSheet(){
+  loadLotList(true);
+}
+
+/* ===== lọc trạng thái ===== */
+function setFilter(filter){
+  CURRENT_FILTER = filter;
+  document.querySelectorAll('#filterBar .tag').forEach(function(tag){
+    tag.classList.toggle('active', tag.getAttribute('data-filter') === filter);
+  });
+  applyFilterAndRender();
+}
+
+function applyFilterAndRender(){
+  let rows = ALL_ROWS;
+  if(CURRENT_FILTER !== 'ALL'){
+    rows = ALL_ROWS.filter(function(r){
+      const s = String(r.Status || r.status || 'NG').toUpperCase();
+      return s === CURRENT_FILTER;
+    });
+  }
+  renderRows(rows);
+  updateSummary(ALL_ROWS); // bộ đếm luôn phản ánh tổng số của lô, không phụ thuộc bộ lọc
 }
 
 function renderRows(rows){
@@ -378,8 +574,7 @@ function renderRows(rows){
   tbody.innerHTML = '';
 
   if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-msg">Chưa có dữ liệu trong Sheet.</td></tr>`;
-    updateSummary([]);
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-msg">Không có dữ liệu phù hợp.</td></tr>`;
     return;
   }
 
@@ -408,8 +603,6 @@ function renderRows(rows){
     `;
     tbody.appendChild(tr);
   });
-
-  updateSummary(rows);
 }
 
 function handleImgError(i){
@@ -432,6 +625,9 @@ function escapeHtml(str){
   div.textContent = str == null ? '' : String(str);
   return div.innerHTML;
 }
+function escapeAttr(str){
+  return escapeHtml(str).replace(/"/g,'&quot;');
+}
 
 function updateSummary(rows){
   let ng=0, ok=0;
@@ -442,6 +638,7 @@ function updateSummary(rows){
   });
   document.getElementById('cntNG').textContent = ng;
   document.getElementById('cntOK').textContent = ok;
+  document.getElementById('cntALL').textContent = rows.length;
   document.getElementById('rowCountLabel').textContent = rows.length;
 }
 
@@ -454,7 +651,7 @@ function closeLightbox(){
 }
 
 if(isConfigured()){
-  loadFromSheet();
+  loadLotList(true);
 } else {
   setConnStatus('err','Chưa gắn URL trong code');
 }
