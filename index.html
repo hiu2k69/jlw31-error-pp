@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+
 <title>Thống Kê Lỗi 不良统计</title>
 <style>
   :root{
@@ -19,6 +21,7 @@
     --sub:#5b6b78;
   }
   *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
   body{
     margin:0;
     background:
@@ -27,6 +30,46 @@
     font-family:"Segoe UI","PingFang SC","Noto Sans SC",Arial,sans-serif;
     color:var(--ink);
     padding:28px 22px 60px;
+  }
+
+  /* ===== global entrance ===== */
+  @keyframes fadeSlideDown{
+    from{opacity:0; transform:translateY(-14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @keyframes fadeSlideUp{
+    from{opacity:0; transform:translateY(16px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+  }
+  @keyframes popIn{
+    0%{opacity:0; transform:scale(0.92);}
+    70%{opacity:1; transform:scale(1.02);}
+    100%{opacity:1; transform:scale(1);}
+  }
+  @keyframes shimmerSweep{
+    0%{transform:translateX(-120%) skewX(-20deg);}
+    100%{transform:translateX(220%) skewX(-20deg);}
+  }
+  @keyframes softPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(201,79,61,0.35);}
+    50%{box-shadow:0 0 0 6px rgba(201,79,61,0);}
+  }
+  @keyframes badgePop{
+    0%{transform:scale(0.6); opacity:0;}
+    60%{transform:scale(1.12); opacity:1;}
+    100%{transform:scale(1); opacity:1;}
+  }
+  @keyframes spinRefresh{
+    from{transform:rotate(0deg);}
+    to{transform:rotate(360deg);}
+  }
+  @keyframes bgGlow{
+    0%,100%{opacity:0.06;}
+    50%{opacity:0.12;}
   }
 
   /* ===== Header / plate ===== */
@@ -39,12 +82,14 @@
     position:relative;
     overflow:hidden;
     box-shadow:0 10px 24px rgba(18,38,58,0.25);
+    animation:fadeSlideDown .55s cubic-bezier(.2,.8,.2,1) both;
   }
   .plate::before{
     content:"";
     position:absolute; inset:0;
     background:repeating-linear-gradient(45deg, var(--caution) 0 22px, var(--navy) 22px 44px);
     opacity:0.08;
+    animation:bgGlow 6s ease-in-out infinite;
   }
   .plate-inner{position:relative; z-index:1; display:flex; align-items:center; gap:20px; flex-wrap:wrap;}
   .code-badge{
@@ -57,39 +102,55 @@
     border-radius:4px;
     flex-shrink:0;
     font-family:"Consolas",monospace;
+    transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s;
+    animation:popIn .5s .1s cubic-bezier(.2,.8,.2,1) both;
   }
+  .code-badge:hover{transform:translateY(-2px) rotate(-1deg); box-shadow:0 6px 16px rgba(232,151,31,0.35);}
   .titles{flex:1; min-width:280px;}
-  .zh{color:#9db6cc; font-size:15px; letter-spacing:1px; margin:0 0 4px;}
-  .vi{color:#fff; font-size:22px; font-weight:700; margin:0; line-height:1.3;}
+  .zh{color:#9db6cc; font-size:15px; letter-spacing:1px; margin:0 0 4px; animation:fadeIn .6s .15s both;}
+  .vi{color:#fff; font-size:22px; font-weight:700; margin:0; line-height:1.3; animation:fadeIn .6s .2s both;}
   .plate-meta{
     position:relative; z-index:1;
     display:flex; gap:26px; margin-top:16px; padding-top:14px;
     border-top:1px solid rgba(255,255,255,0.15);
     color:#cfe0ee; font-size:13px; flex-wrap:wrap;
+    animation:fadeIn .6s .25s both;
   }
-  .plate-meta b{color:#fff;}
+  .plate-meta b{color:#fff; transition:color .3s;}
 
   /* ===== connection bar ===== */
   .conn-bar{
     max-width:1500px; margin:0 auto 14px;
     background:#fff; border:1px solid var(--line); border-radius:6px;
     padding:10px 16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between;
+    animation:fadeSlideDown .55s .08s cubic-bezier(.2,.8,.2,1) both;
+    transition:box-shadow .3s;
   }
   .conn-left{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
   .status-pill{
     font-size:12px; font-weight:700; padding:5px 10px; border-radius:20px; white-space:nowrap;
+    transition:background .3s ease, color .3s ease, transform .25s ease;
   }
   .status-pill.off{background:#f0eee9; color:#9a8f7d;}
-  .status-pill.ok{background:#e5f4ec; color:var(--ok);}
-  .status-pill.err{background:#fdeceb; color:var(--ongoing);}
-  .status-pill.loading{background:#fdf3e2; color:var(--caution-dark);}
+  .status-pill.ok{background:#e5f4ec; color:var(--ok); animation:badgePop .4s cubic-bezier(.2,.8,.2,1);}
+  .status-pill.err{background:#fdeceb; color:var(--ongoing); animation:badgePop .4s cubic-bezier(.2,.8,.2,1);}
+  .status-pill.loading{background:#fdf3e2; color:var(--caution-dark); position:relative; overflow:hidden;}
+  .status-pill.loading::after{
+    content:""; position:absolute; top:0; left:0; height:100%; width:40%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
+    animation:shimmerSweep 1.1s ease-in-out infinite;
+  }
   .btn{
     border:none; cursor:pointer; font-weight:700; font-size:14px;
     padding:10px 18px; border-radius:5px; color:#fff;
-    background:var(--steel); transition:transform .12s, box-shadow .12s;
+    background:var(--steel); transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s, background .25s;
   }
-  .btn:hover{transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,0.18);}
+  .btn:hover{transform:translateY(-2px); box-shadow:0 6px 14px rgba(61,107,143,0.3);}
+  .btn:active{transform:translateY(0) scale(.97); box-shadow:0 2px 6px rgba(61,107,143,0.25);}
   .btn.ghost{background:#fff; color:var(--steel); border:1px solid var(--steel);}
+  .btn.spinning{pointer-events:none;}
+  .btn.spinning .refresh-icon{display:inline-block; animation:spinRefresh .7s linear infinite;}
+  .refresh-icon{display:inline-block; transition:transform .3s;}
 
   .lot-select-wrap{display:flex; align-items:center; gap:8px;}
   .lot-select-wrap label{font-size:12.5px; font-weight:700; color:var(--sub); white-space:nowrap;}
@@ -98,25 +159,35 @@
     padding:8px 32px 8px 12px; border-radius:5px; border:1px solid var(--line);
     background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%233d6b8f"><path d="M5.5 7.5l4.5 5 4.5-5z"/></svg>') no-repeat right 10px center;
     background-size:14px; appearance:none; -webkit-appearance:none; cursor:pointer; min-width:150px;
+    transition:border-color .25s, box-shadow .25s, transform .15s;
   }
+  select#lotSelect:hover:not(:disabled){border-color:var(--steel); box-shadow:0 2px 8px rgba(61,107,143,0.15);}
+  select#lotSelect:focus{outline:none; border-color:var(--steel); box-shadow:0 0 0 3px rgba(61,107,143,0.18);}
   select#lotSelect:disabled{opacity:0.55; cursor:not-allowed;}
 
   /* ===== toolbar / filter ===== */
   .toolbar{
     max-width:1500px; margin:0 auto 14px;
     display:flex; justify-content:flex-start; align-items:center; gap:10px; flex-wrap:wrap;
+    animation:fadeSlideDown .55s .12s cubic-bezier(.2,.8,.2,1) both;
+    transition:opacity .3s ease;
   }
   .filter-label{font-size:12.5px; font-weight:700; color:var(--sub); margin-right:2px;}
   .tag{
     font-size:12.5px; padding:6px 12px; border-radius:20px; font-weight:600;
     display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--sub);
-    cursor:pointer; user-select:none; transition:transform .1s, box-shadow .1s, border-color .1s;
+    cursor:pointer; user-select:none;
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s, border-color .2s, background .2s, color .2s;
+    position:relative; overflow:hidden;
   }
-  .tag:hover{transform:translateY(-1px); box-shadow:0 3px 8px rgba(18,38,58,0.10);}
-  .tag .dot{width:8px; height:8px; border-radius:50%;}
-  .tag.active{border-color:var(--steel); background:#eaf2f8; color:var(--navy); box-shadow:0 2px 6px rgba(61,107,143,0.18);}
+  .tag:hover{transform:translateY(-2px) scale(1.03); box-shadow:0 4px 10px rgba(18,38,58,0.12);}
+  .tag:active{transform:translateY(0) scale(0.97);}
+  .tag .dot{width:8px; height:8px; border-radius:50%; transition:transform .25s;}
+  .tag.active{border-color:var(--steel); background:#eaf2f8; color:var(--navy); box-shadow:0 2px 6px rgba(61,107,143,0.18); transform:scale(1.04);}
   .tag.active.tag-ng{border-color:var(--ongoing); background:#fdeceb; color:var(--ongoing);}
   .tag.active.tag-ok{border-color:var(--ok); background:#e5f4ec; color:var(--ok);}
+  .tag.active .dot{transform:scale(1.3);}
+  .tag b{transition:color .2s;}
 
   /* ===== table wrap ===== */
   .table-wrap{
@@ -124,6 +195,7 @@
     background:#fff; border-radius:6px; overflow-x:auto;
     border:1px solid var(--line);
     box-shadow:0 4px 14px rgba(18,38,58,0.08);
+    animation:fadeSlideUp .55s .16s cubic-bezier(.2,.8,.2,1) both;
   }
   table{border-collapse:collapse; width:100%; min-width:1100px;}
   thead th{
@@ -142,9 +214,13 @@
   th.date-col{width:130px;}
   th.status-col{width:150px;}
 
-  tbody tr{border-bottom:1px solid var(--line);}
+  tbody tr{
+    border-bottom:1px solid var(--line);
+    animation:fadeSlideUp .42s cubic-bezier(.2,.8,.2,1) both;
+    transition:background .25s ease, box-shadow .25s ease, transform .2s ease;
+  }
   tbody tr:nth-child(even){background:#f7fafc;}
-  tbody tr:hover{background:#eef6fb;}
+  tbody tr:hover{background:#eef6fb; transform:translateX(2px); box-shadow:inset 3px 0 0 var(--steel);}
   td{padding:10px 14px; vertical-align:top; font-size:13.5px; line-height:1.5;}
   td.stt{text-align:center; font-weight:700; color:var(--sub); vertical-align:middle;}
 
@@ -154,27 +230,39 @@
     width:160px; height:120px; border-radius:6px; margin:0 auto;
     display:flex; align-items:center; justify-content:center;
     overflow:hidden; background:#fafcfd; border:1px solid var(--line); cursor:pointer;
+    transition:box-shadow .25s ease, border-color .25s ease, transform .25s cubic-bezier(.2,.8,.2,1);
   }
-  .img-box img{width:100%; height:100%; object-fit:cover;}
+  .img-box:hover{box-shadow:0 8px 18px rgba(18,38,58,0.18); border-color:var(--steel); transform:translateY(-3px);}
+  .img-box img{width:100%; height:100%; object-fit:cover; transition:transform .4s cubic-bezier(.2,.8,.2,1); animation:fadeIn .35s ease;}
+  .img-box:hover img{transform:scale(1.08);}
   .img-box.empty{color:#c2ccd3; font-size:11px; cursor:default; border-style:dashed;}
+  .img-box.empty:hover{transform:none; box-shadow:none; border-color:var(--line);}
 
   .status-badge{
     display:inline-block; width:100%; text-align:center;
     border-radius:14px; padding:6px 10px; font-size:12.5px; font-weight:700; color:#fff;
+    animation:badgePop .35s cubic-bezier(.2,.8,.2,1) both;
+    transition:transform .2s ease;
   }
-  .status-badge.st-ongoing{background:var(--ongoing);}
+  .status-badge.st-ongoing{background:var(--ongoing); animation:badgePop .35s cubic-bezier(.2,.8,.2,1) both, softPulse 2.4s ease-in-out .4s infinite;}
   .status-badge.st-done{background:var(--ok);}
+  tr:hover .status-badge{transform:scale(1.05);}
 
   /* lightbox */
   .lightbox{
     display:none; position:fixed; inset:0; background:rgba(10,18,26,0.85);
     align-items:center; justify-content:center; z-index:50; cursor:zoom-out;
+    opacity:0; transition:opacity .25s ease;
   }
-  .lightbox.open{display:flex;}
-  .lightbox img{max-width:88vw; max-height:88vh; border-radius:6px; box-shadow:0 10px 40px rgba(0,0,0,0.5);}
+  .lightbox.open{display:flex; opacity:1;}
+  .lightbox img{
+    max-width:88vw; max-height:88vh; border-radius:6px; box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    transform:scale(0.92); transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .lightbox.open img{transform:scale(1);}
 
-  footer{max-width:1500px; margin:16px auto 0; color:var(--sub); font-size:12px; text-align:center;}
-  .empty-msg{padding:40px; text-align:center; color:var(--sub); font-size:14px;}
+  footer{max-width:1500px; margin:16px auto 0; color:var(--sub); font-size:12px; text-align:center; animation:fadeIn .6s .3s both;}
+  .empty-msg{padding:40px; text-align:center; color:var(--sub); font-size:14px; animation:fadeIn .4s ease;}
 
   /* ===== skeleton loading ===== */
   .skeleton-cell{
@@ -191,9 +279,10 @@
   .skeleton-img{width:160px; height:120px; border-radius:6px; margin:0 auto;}
   .skeleton-badge{width:70px; height:24px; border-radius:14px; margin:0 auto;}
   .skeleton-line + .skeleton-line{margin-top:7px;}
+  #tbody tr{animation:fadeIn .35s ease both;}
 
   .toolbar.is-loading, .conn-left.is-loading{
-    opacity:0.6; pointer-events:none;
+    opacity:0.6; pointer-events:none; transition:opacity .3s ease;
   }
 
   @media (max-width:700px){
@@ -217,6 +306,7 @@
       background:#fff; border:1px solid var(--line); border-radius:8px;
       margin-bottom:12px; padding:6px 14px; box-shadow:0 2px 8px rgba(18,38,58,0.06);
     }
+    tr:hover{transform:none; box-shadow:0 4px 14px rgba(18,38,58,0.14);}
     td{
       border:none; padding:10px 0; font-size:13.5px;
       border-bottom:1px solid #eef1f3;
@@ -244,6 +334,15 @@
     .code-badge{font-size:17px; padding:7px 12px;}
     .vi{font-size:16px;}
     .zh{font-size:13px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:0.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:0.001ms !important;
+      scroll-behavior:auto !important;
+    }
   }
 </style>
 </head>
@@ -275,7 +374,7 @@
       </select>
     </div>
   </div>
-  <button class="btn ghost" onclick="loadLotList(true)">↻ Tải lại từ Sheet</button>
+  <button class="btn ghost" id="reloadBtn" onclick="loadLotList(true)"><span class="refresh-icon">↻</span> Tải lại từ Sheet</button>
 </div>
 
 <div class="toolbar" id="filterBar">
@@ -322,6 +421,11 @@
        ví dụ: "images/"  ->  sẽ tìm file "images/1.png", "images/2.png"...
      - Nếu ảnh host trên 1 địa chỉ web khác, dùng URL đầy đủ, ví dụ:
        "https://example.com/jlw31-images/"
+     - Dùng {LOT} để mỗi LÔ HÀNG có 1 thư mục ảnh riêng (khuyến nghị khi
+       nhiều lô/tab dùng chung 1 trang), ví dụ: "images/{LOT}/" sẽ tự
+       thay {LOT} bằng tên lô đang chọn -> tìm "images/LOT01/1.png",
+       "images/LOT02/1.png"... Nhớ tạo đúng thư mục con trùng tên tab
+       trong Google Sheet.
 
    Mỗi tab (sheet) trong Google Sheet = 1 lô hàng. Trang sẽ tự lấy
    danh sách tên các tab từ Apps Script để người dùng chọn xem.
@@ -331,7 +435,7 @@ const CONFIG = {
   TITLE_ZH       : "PP试产过程不良统计",
   TITLE_VI_TEMPLATE : "THỐNG KÊ LỖI TRONG QUÁ TRÌNH CHẠY THỬ NGHIỆM PP {LOT}",
   SCRIPT_URL     : "https://script.google.com/macros/s/AKfycbyGQUVjpDrTW52AxOodlfolUNtg_GCVXgDjQ1sdSknNY54B4BWhx5F06StBnb62pPw7/exec",
-  IMAGE_BASE_URL : "images/",
+  IMAGE_BASE_URL : "images/{LOT}/",
   IMAGE_EXT      : ".png"
 };
 /* ========================================================================= */
@@ -375,9 +479,19 @@ function statusLabel(s){
     : 'NG';
 }
 
+function imageBaseForLot(lotName){
+  // Nếu IMAGE_BASE_URL có chứa {LOT}, thay bằng tên lô hàng đang chọn
+  // -> mỗi lô có 1 thư mục ảnh riêng, ví dụ: images/JLW31/1.png, images/JLW32/1.png
+  const cleanLot = String(lotName || '').trim();
+  if(CONFIG.IMAGE_BASE_URL.indexOf('{LOT}') !== -1){
+    return CONFIG.IMAGE_BASE_URL.replace('{LOT}', encodeURIComponent(cleanLot));
+  }
+  return CONFIG.IMAGE_BASE_URL;
+}
+
 function imageUrlForId(id){
   if(id === '' || id === null || id === undefined) return '';
-  return CONFIG.IMAGE_BASE_URL + String(id).trim() + CONFIG.IMAGE_EXT;
+  return imageBaseForLot(CURRENT_LOT) + String(id).trim() + CONFIG.IMAGE_EXT;
 }
 
 let __jsonpCounter = 0;
@@ -427,7 +541,7 @@ function renderSkeletonRows(n){
   const tbody = document.getElementById('tbody');
   let html = '';
   for(let i=0; i<n; i++){
-    html += `<tr>
+    html += `<tr style="animation-delay:${i*0.06}s">
       <td class="stt" data-label="#"><div class="skeleton-cell" style="width:18px;height:14px;margin:2px auto;"></div></td>
       <td class="img-cell" data-label="Hình ảnh / 图片"><div class="skeleton-cell skeleton-img"></div></td>
       <td data-label="Vấn đề lỗi / 不良问题">
@@ -451,8 +565,10 @@ function renderSkeletonRows(n){
 function setLoadingUI(isLoading){
   const filterBar = document.getElementById('filterBar');
   const connLeft = document.querySelector('.conn-left');
+  const reloadBtn = document.getElementById('reloadBtn');
   if(filterBar) filterBar.classList.toggle('is-loading', isLoading);
   if(connLeft) connLeft.classList.toggle('is-loading', isLoading);
+  if(reloadBtn) reloadBtn.classList.toggle('spinning', isLoading);
 }
 
 /* ===== state ===== */
@@ -574,38 +690,56 @@ function applyFilterAndRender(){
 
 function renderRows(rows){
   const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '';
 
-  if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-msg">Không có dữ liệu phù hợp.</td></tr>`;
-    return;
-  }
-
-  rows.forEach((r, i)=>{
-    const id       = r.ID || r.id || '';
-    const problem  = r.Problem || r.problem || '';
-    const cause    = r.Cause   || r.cause   || '';
-    const fix      = r.Fix     || r.fix     || '';
-    const date     = r.Date    || r.date    || '';
-    const status   = r.Status  || r.status  || 'NG';
-    const imgSrc   = imageUrlForId(id);
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="stt" data-label="#">${i+1}</td>
-      <td class="img-cell" data-label="Hình ảnh / 图片">
-        <div class="img-box" id="imgbox-${i}">
-          ${imgSrc ? `<img src="${imgSrc}" onerror="handleImgError(${i})" onclick="openLightbox(this.src)">` : ''}
-        </div>
-      </td>
-      <td data-label="Vấn đề lỗi / 不良问题">${escapeHtml(problem)}</td>
-      <td data-label="Nguyên nhân / 原因分析">${escapeHtml(cause)}</td>
-      <td data-label="Cách khắc phục / 改善对策">${escapeHtml(fix)}</td>
-      <td data-label="Ngày xảy ra / 问题发生日期">${escapeHtml(formatDate(date))}</td>
-      <td data-label="Tình trạng / 后续状态"><span class="status-badge ${statusClass(status)}">${statusLabel(status)}</span></td>
-    `;
-    tbody.appendChild(tr);
+  // hiệu ứng mờ dần các dòng cũ trước khi thay bằng dòng mới, giúp chuyển bộ lọc mượt hơn
+  const oldRows = tbody.querySelectorAll('tr');
+  oldRows.forEach(function(tr){
+    tr.style.transition = 'opacity .15s ease, transform .15s ease';
+    tr.style.opacity = '0';
+    tr.style.transform = 'translateY(-6px)';
   });
+
+  const doRender = function(){
+    tbody.innerHTML = '';
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-msg">Không có dữ liệu phù hợp.</td></tr>`;
+      return;
+    }
+
+    rows.forEach((r, i)=>{
+      const id       = r.ID || r.id || '';
+      const problem  = r.Problem || r.problem || '';
+      const cause    = r.Cause   || r.cause   || '';
+      const fix      = r.Fix     || r.fix     || '';
+      const date     = r.Date    || r.date    || '';
+      const status   = r.Status  || r.status  || 'NG';
+      const imgSrc   = imageUrlForId(id);
+
+      const tr = document.createElement('tr');
+      tr.style.animationDelay = (Math.min(i, 24) * 0.035) + 's';
+      tr.innerHTML = `
+        <td class="stt" data-label="#">${i+1}</td>
+        <td class="img-cell" data-label="Hình ảnh / 图片">
+          <div class="img-box" id="imgbox-${i}">
+            ${imgSrc ? `<img src="${imgSrc}" onerror="handleImgError(${i})" onclick="openLightbox(this.src)">` : ''}
+          </div>
+        </td>
+        <td data-label="Vấn đề lỗi / 不良问题">${escapeHtml(problem)}</td>
+        <td data-label="Nguyên nhân / 原因分析">${escapeHtml(cause)}</td>
+        <td data-label="Cách khắc phục / 改善对策">${escapeHtml(fix)}</td>
+        <td data-label="Ngày xảy ra / 问题发生日期">${escapeHtml(formatDate(date))}</td>
+        <td data-label="Tình trạng / 后续状态"><span class="status-badge ${statusClass(status)}">${statusLabel(status)}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  };
+
+  if(oldRows.length){
+    setTimeout(doRender, 150);
+  } else {
+    doRender();
+  }
 }
 
 function handleImgError(i){
@@ -632,6 +766,22 @@ function escapeAttr(str){
   return escapeHtml(str).replace(/"/g,'&quot;');
 }
 
+function animateCount(el, target){
+  const start = parseInt(el.textContent, 10) || 0;
+  if(start === target){ el.textContent = target; return; }
+  const duration = 380;
+  const startTime = performance.now();
+  function step(now){
+    const p = Math.min(1, (now - startTime) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const val = Math.round(start + (target - start) * eased);
+    el.textContent = val;
+    if(p < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+
 function updateSummary(rows){
   let ng=0, ok=0;
   rows.forEach(r=>{
@@ -639,14 +789,15 @@ function updateSummary(rows){
     if(String(s).toUpperCase() === 'OK') ok++;
     else ng++;
   });
-  document.getElementById('cntNG').textContent = ng;
-  document.getElementById('cntOK').textContent = ok;
-  document.getElementById('cntALL').textContent = rows.length;
-  document.getElementById('rowCountLabel').textContent = rows.length;
+  animateCount(document.getElementById('cntNG'), ng);
+  animateCount(document.getElementById('cntOK'), ok);
+  animateCount(document.getElementById('cntALL'), rows.length);
+  animateCount(document.getElementById('rowCountLabel'), rows.length);
 }
 
 function openLightbox(src){
-  document.getElementById('lightboxImg').src = src;
+  const img = document.getElementById('lightboxImg');
+  img.src = src;
   document.getElementById('lightbox').classList.add('open');
 }
 function closeLightbox(){
