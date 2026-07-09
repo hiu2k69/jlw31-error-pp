@@ -19,7 +19,7 @@
 - CSS3
 - JavaScript (ES6)
 - Google Sheets
-- Google Apps Script (JSONP)
+- Google Apps Script (JSONP).
 
 ## 📁 项目结构
 

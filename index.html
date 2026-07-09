@@ -506,8 +506,10 @@
       </select>
     </div>
   </div>
-  <button class="btn ghost" id="reloadBtn" onclick="loadLotList(true)"><span class="refresh-icon">↻</span> Tải lại từ Sheet</button>
-</div>
+<button class="btn ghost" id="reloadBtn" onclick="loadLotList(true)">
+  <span class="refresh-icon">↻</span>
+  Tải lại từ Sheet / 从 Sheet 重新加载
+</button></div>
 
 <div class="toolbar" id="filterBar">
   <span class="filter-label">Lọc trạng thái / 状态筛选:</span>
@@ -515,7 +517,7 @@
     Tất cả: <b id="cntALL">0</b>
   </span>
   <span class="tag tag-ng" data-filter="NG" onclick="setFilter('NG')">
-    <span class="dot" style="background:var(--ongoing)"></span> NG - Vẫn còn xảy ra: <b id="cntNG">0</b>
+    <span class="dot" style="background:var(--ongoing)"></span> NG: <b id="cntNG">0</b>
   </span>
   <span class="tag tag-ok" data-filter="OK" onclick="setFilter('OK')">
     <span class="dot" style="background:var(--ok)"></span> OK: <b id="cntOK">0</b>
@@ -762,7 +764,13 @@ async function loadLotList(forceReload){
     console.error(err);
     setConnStatus('err','Lỗi kết nối / không lấy được danh sách lô');
     setLoadingUI(false);
-    document.getElementById('tbody').innerHTML = `<tr><td colspan="7" class="empty-msg">Không tải được dữ liệu. Bấm "↻ Tải lại từ Sheet" để thử lại.</td></tr>`;
+   document.getElementById('tbody').innerHTML = `
+<tr>
+  <td colspan="7" class="empty-msg">
+    Không tải được dữ liệu. Bấm "↻ Tải lại từ Sheet".<br>
+    无法加载数据，请点击“↻ 从 Sheet 重新加载”重试。
+  </td>
+</tr>`;
     if(document.getElementById('pageLoader')){
       showPageLoaderError('Không kết nối được tới Google Sheet. Vui lòng thử lại. / 无法连接 Google 表格，请重试。');
     }
@@ -788,13 +796,18 @@ async function loadLotData(lotName){
     document.getElementById('lotMeta').textContent = lotName;
     applyConfig(lotName);
     applyFilterAndRender();
-    setConnStatus('ok','Đã kết nối');
+    setConnStatus('ok','Đã kết nối 已连接');
     ok = true;
   }catch(err){
     console.error(err);
     setConnStatus('err','Lỗi tải dữ liệu lô hàng');
-    document.getElementById('tbody').innerHTML = `<tr><td colspan="7" class="empty-msg">Không tải được dữ liệu. Bấm "↻ Tải lại từ Sheet" để thử lại.</td></tr>`;
-  }finally{
+document.getElementById('tbody').innerHTML = `
+<tr>
+  <td colspan="7" class="empty-msg">
+    Không tải được dữ liệu. Bấm "↻ Tải lại từ Sheet".<br>
+    无法加载数据，请点击“↻ 从 Sheet 重新加载”重试。
+  </td>
+</tr>`;  }finally{
     setLoadingUI(false);
   }
   return ok;
