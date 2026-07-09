@@ -72,6 +72,114 @@
     50%{opacity:0.12;}
   }
 
+  /* ===== Full-page loader (initial data load) ===== */
+  .page-loader{
+    position:fixed; inset:0; z-index:999;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      repeating-linear-gradient(45deg, rgba(232,151,31,0.05) 0 22px, transparent 22px 44px),
+      radial-gradient(circle at 50% 30%, #1c3a56 0%, var(--navy) 65%);
+    opacity:1; transition:opacity .45s ease, visibility .45s ease;
+  }
+  .page-loader.hide{opacity:0; visibility:hidden; pointer-events:none;}
+  .loader-card{
+    width:min(340px, 86vw);
+    text-align:center;
+    animation:popIn .5s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .factory-loader{position:relative; width:230px; height:96px; margin:0 auto 18px;}
+  .belt-shadow{
+    position:absolute; left:6px; right:6px; bottom:16px; height:14px; border-radius:50%;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0.35), transparent 70%);
+    filter:blur(2px);
+  }
+  .belt-track{
+    position:absolute; left:0; right:0; bottom:22px; height:9px; border-radius:5px;
+    background:repeating-linear-gradient(90deg, var(--caution) 0 14px, #234a68 14px 28px);
+    background-size:56px 9px;
+    animation:beltMove 0.7s linear infinite;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
+  .belt-post{
+    position:absolute; bottom:8px; width:6px; height:16px; border-radius:2px; background:#0e1f30;
+  }
+  .belt-post.left{left:14px;}
+  .belt-post.right{right:14px;}
+  .scan-glow{
+    position:absolute; left:50%; top:0; width:46px; height:78px; transform:translateX(-50%);
+    background:linear-gradient(to bottom, rgba(232,151,31,0.5), rgba(232,151,31,0) 75%);
+    animation:scanPulse 1.4s ease-in-out infinite;
+    pointer-events:none;
+  }
+  .scan-eye{
+    position:absolute; left:50%; top:6px; transform:translateX(-50%);
+    width:22px; height:22px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff, var(--caution) 55%, var(--caution-dark) 100%);
+    box-shadow:0 0 10px rgba(232,151,31,0.85), 0 3px 6px rgba(0,0,0,0.3);
+  }
+  .scan-eye::after{
+    content:""; position:absolute; inset:6px; border-radius:50%; background:var(--navy);
+  }
+  .cargo{
+    position:absolute; bottom:26px; width:24px; height:19px; border-radius:3px;
+    left:-14%;
+    background:var(--ongoing);
+    box-shadow:0 3px 6px rgba(0,0,0,0.3);
+    animation:beltCarry 3.6s linear infinite;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:800; color:#fff;
+  }
+  .cargo::before{content:"!"; animation:cargoLabel 3.6s linear infinite;}
+  .cargo.c2{animation-delay:-1.2s;}
+  .cargo.c2::before{animation-delay:-1.2s;}
+  .cargo.c3{animation-delay:-2.4s;}
+  .cargo.c3::before{animation-delay:-2.4s;}
+
+  @keyframes beltMove{ from{background-position:0 0;} to{background-position:-56px 0;} }
+  @keyframes scanPulse{ 0%,100%{opacity:0.55; transform:translateX(-50%) scaleY(1);} 50%{opacity:1; transform:translateX(-50%) scaleY(1.08);} }
+  @keyframes beltCarry{
+    0%{ left:-14%; background:var(--ongoing); transform:scale(1) rotate(0deg);}
+    44%{ background:var(--ongoing); transform:scale(1) rotate(0deg);}
+    50%{ background:var(--caution-dark); transform:scale(1.22) rotate(-4deg);}
+    56%{ background:var(--ok); transform:scale(1) rotate(0deg);}
+    100%{ left:106%; background:var(--ok); transform:scale(1) rotate(0deg);}
+  }
+  @keyframes cargoLabel{
+    0%{content:"!";} 49%{content:"!";} 50%{content:"✓";} 100%{content:"✓";}
+  }
+
+  .loader-title-zh{
+    color:#9db6cc; font-size:12.5px; letter-spacing:1px; margin:0 0 4px;
+  }
+  .loader-title{
+    color:#fff; font-size:17px; font-weight:800; letter-spacing:.3px; margin:0 0 6px;
+  }
+  .loader-title .dots span{animation:dotBlink 1.4s infinite; opacity:0;}
+  .loader-title .dots span:nth-child(1){animation-delay:0s;}
+  .loader-title .dots span:nth-child(2){animation-delay:.2s;}
+  .loader-title .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes dotBlink{ 0%,80%,100%{opacity:0;} 40%{opacity:1;} }
+  .loader-sub{
+    color:#9db6cc; font-size:12.5px; min-height:18px; transition:opacity .25s ease;
+  }
+  .loader-progress{
+    width:100%; height:6px; border-radius:4px; overflow:hidden; margin:16px 0 4px;
+    background:rgba(255,255,255,0.12);
+  }
+  .loader-progress-bar{
+    height:100%; width:40%; border-radius:4px;
+    background:repeating-linear-gradient(45deg, var(--caution) 0 8px, var(--caution-dark) 8px 16px);
+    animation:loaderBarSlide 1.1s ease-in-out infinite;
+  }
+  @keyframes loaderBarSlide{
+    0%{ transform:translateX(-110%); }
+    100%{ transform:translateX(360%); }
+  }
+  .loader-retry-btn{margin-top:16px; display:none;}
+  .page-loader.error .factory-loader{filter:grayscale(0.4) opacity(0.7);}
+  .page-loader.error .cargo,
+  .page-loader.error .belt-track{animation-play-state:paused;}
+
   /* ===== Header / plate ===== */
   .plate{
     max-width:1500px;
@@ -144,6 +252,7 @@
     border:none; cursor:pointer; font-weight:700; font-size:14px;
     padding:10px 18px; border-radius:5px; color:#fff;
     background:var(--steel); transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s, background .25s;
+    display:inline-flex; align-items:center; gap:7px;
   }
   .btn:hover{transform:translateY(-2px); box-shadow:0 6px 14px rgba(61,107,143,0.3);}
   .btn:active{transform:translateY(0) scale(.97); box-shadow:0 2px 6px rgba(61,107,143,0.25);}
@@ -262,7 +371,10 @@
   .lightbox.open img{transform:scale(1);}
 
   footer{max-width:1500px; margin:16px auto 0; color:var(--sub); font-size:12px; text-align:center; animation:fadeIn .6s .3s both;}
-  .empty-msg{padding:40px; text-align:center; color:var(--sub); font-size:14px; animation:fadeIn .4s ease;}
+  .empty-msg{padding:48px 20px; text-align:center; color:var(--sub); font-size:14px; animation:fadeIn .4s ease;}
+  .empty-msg::before{
+    content:"📋"; display:block; font-size:30px; margin-bottom:10px; opacity:.55;
+  }
 
   /* ===== skeleton loading ===== */
   .skeleton-cell{
@@ -347,6 +459,27 @@
 </style>
 </head>
 <body>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-card">
+    <div class="factory-loader">
+      <div class="scan-glow"></div>
+      <div class="scan-eye"></div>
+      <div class="belt-shadow"></div>
+      <div class="cargo c1"></div>
+      <div class="cargo c2"></div>
+      <div class="cargo c3"></div>
+      <div class="belt-track"></div>
+      <div class="belt-post left"></div>
+      <div class="belt-post right"></div>
+    </div>
+    <p class="loader-title-zh" id="loaderTitleZh">数据加载中</p>
+    <p class="loader-title" id="loaderTitle">Đang tải dữ liệu<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+    <p class="loader-sub" id="loaderSub">Đang kết nối tới Google Sheet / 正在连接 Google 表格</p>
+    <div class="loader-progress"><div class="loader-progress-bar"></div></div>
+    <button class="btn loader-retry-btn" id="loaderRetryBtn" onclick="retryInitialLoad()">↻ Thử lại / 重试</button>
+  </div>
+</div>
 
 <div class="plate">
   <div class="plate-inner">
@@ -619,21 +752,31 @@ async function loadLotList(forceReload){
       CURRENT_LOT = keep;
     }
 
-    await loadLotData(CURRENT_LOT);
+    const loadedOk = await loadLotData(CURRENT_LOT);
+    const loaderEl0 = document.getElementById('pageLoader');
+    if(loaderEl0){
+      if(loadedOk) hidePageLoader();
+      else showPageLoaderError('Không tải được dữ liệu lô hàng. Vui lòng thử lại. / 无法加载批次数据，请重试。');
+    }
 
   }catch(err){
     console.error(err);
     setConnStatus('err','Lỗi kết nối / không lấy được danh sách lô');
     setLoadingUI(false);
     document.getElementById('tbody').innerHTML = `<tr><td colspan="7" class="empty-msg">Không tải được dữ liệu. Bấm "↻ Tải lại từ Sheet" để thử lại.</td></tr>`;
+    if(document.getElementById('pageLoader')){
+      showPageLoaderError('Không kết nối được tới Google Sheet. Vui lòng thử lại. / 无法连接 Google 表格，请重试。');
+    }
   }
 }
 
-/* Bước 2: lấy dữ liệu của 1 tab (lô hàng) cụ thể */
+/* Bước 2: lấy dữ liệu của 1 tab (lô hàng) cụ thể. Trả về true/false để loadLotList
+   biết có nên ẩn màn hình loading lớn ban đầu hay chuyển sang trạng thái lỗi. */
 async function loadLotData(lotName){
   setConnStatus('loading','Đang tải dữ liệu lô "' + lotName + '"...');
   setLoadingUI(true);
   renderSkeletonRows(4);
+  let ok = false;
   try{
     const url = CONFIG.SCRIPT_URL + '?sheet=' + encodeURIComponent(lotName);
     const rows = await jsonpRequest(url);
@@ -647,6 +790,7 @@ async function loadLotData(lotName){
     applyConfig(lotName);
     applyFilterAndRender();
     setConnStatus('ok','Đã kết nối');
+    ok = true;
   }catch(err){
     console.error(err);
     setConnStatus('err','Lỗi tải dữ liệu lô hàng');
@@ -654,6 +798,7 @@ async function loadLotData(lotName){
   }finally{
     setLoadingUI(false);
   }
+  return ok;
 }
 
 function onLotChange(){
@@ -804,9 +949,77 @@ function closeLightbox(){
   document.getElementById('lightbox').classList.remove('open');
 }
 
+/* ===== màn hình loading toàn trang lúc mới vào (chỉ hiện ở lần tải đầu tiên) ===== */
+const LOADER_MESSAGES = [
+  'Đang kết nối tới Google Sheet / 正在连接 Google 表格',
+  'Đang quét dữ liệu lỗi / 正在扫描不良数据',
+  'Đang tải hình ảnh liên quan / 正在加载相关图片',
+  'Sắp xong rồi, chờ chút nhé / 马上就好，请稍等'
+];
+let loaderMsgTimer = null;
+let loaderMsgIndex = 0;
+
+function startLoaderMessages(){
+  const sub = document.getElementById('loaderSub');
+  if(!sub) return;
+  clearInterval(loaderMsgTimer);
+  loaderMsgTimer = setInterval(function(){
+    loaderMsgIndex = (loaderMsgIndex + 1) % LOADER_MESSAGES.length;
+    sub.style.opacity = '0';
+    setTimeout(function(){
+      sub.textContent = LOADER_MESSAGES[loaderMsgIndex];
+      sub.style.opacity = '1';
+    }, 220);
+  }, 1900);
+}
+function stopLoaderMessages(){
+  clearInterval(loaderMsgTimer);
+  loaderMsgTimer = null;
+}
+function hidePageLoader(){
+  const el = document.getElementById('pageLoader');
+  if(!el) return;
+  stopLoaderMessages();
+  el.classList.add('hide');
+  setTimeout(function(){
+    if(el.parentNode) el.parentNode.removeChild(el);
+  }, 500);
+}
+function showPageLoaderError(message){
+  const el = document.getElementById('pageLoader');
+  if(!el) return;
+  el.classList.add('error');
+  stopLoaderMessages();
+  const sub = document.getElementById('loaderSub');
+  if(sub){ sub.style.opacity = '1'; sub.textContent = message || 'Không kết nối được, vui lòng thử lại. / 连接失败，请重试。'; }
+  const titleZh = document.getElementById('loaderTitleZh');
+  const title = document.getElementById('loaderTitle');
+  if(titleZh) titleZh.textContent = '加载数据失败';
+  if(title) title.textContent = 'Tải dữ liệu thất bại';
+  const retryBtn = document.getElementById('loaderRetryBtn');
+  if(retryBtn) retryBtn.style.display = 'inline-block';
+}
+function retryInitialLoad(){
+  const el = document.getElementById('pageLoader');
+  if(el){
+    el.classList.remove('error');
+    const titleZh = document.getElementById('loaderTitleZh');
+    const title = document.getElementById('loaderTitle');
+    if(titleZh) titleZh.textContent = '数据加载中';
+    if(title) title.innerHTML = 'Đang tải dữ liệu<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+    const retryBtn = document.getElementById('loaderRetryBtn');
+    if(retryBtn) retryBtn.style.display = 'none';
+    loaderMsgIndex = 0;
+    startLoaderMessages();
+  }
+  loadLotList(true);
+}
+startLoaderMessages();
+
 if(isConfigured()){
   loadLotList(true);
 } else {
+  showPageLoaderError('Chưa gắn URL trong code (SCRIPT_URL). / 代码中未配置 SCRIPT_URL。');
   setConnStatus('err','Chưa gắn URL trong code');
 }
 </script>
