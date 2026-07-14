@@ -541,7 +541,7 @@
 </table>
 </div>
 
-<footer>Trang lấy dữ liệu chữ từ Google Sheet. Hình ảnh được lấy trực tiếp theo tên file "ID.png" trong thư mục ảnh cấu hình bên dưới.</footer>
+<footer>Trang lấy dữ liệu chữ từ Google Sheet. Hình ảnh được lấy trực tiếp theo tên file "ID.png" hoặc "ID.jpg" trong thư mục ảnh cấu hình bên dưới.</footer>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src=""></div>
 
@@ -550,9 +550,11 @@
    CẤU HÌNH DỰ ÁN — phần duy nhất cần sửa khi dùng cho dự án mới.
 
    IMAGE_BASE_URL: đường dẫn tới THƯ MỤC chứa ảnh, ảnh phải đặt tên
-   trùng với cột ID trong Sheet, đuôi .png
+   trùng với cột ID trong Sheet. Đuôi có thể là .png hoặc .jpg — trang
+   sẽ tự thử lần lượt các đuôi trong IMAGE_EXTS, đuôi nào tìm thấy
+   trước thì hiển thị đuôi đó.
      - Nếu để ảnh cùng thư mục với file HTML này, dùng thư mục con,
-       ví dụ: "images/"  ->  sẽ tìm file "images/1.png", "images/2.png"...
+       ví dụ: "images/"  ->  sẽ tìm file "images/1.png", "images/1.jpg"...
      - Nếu ảnh host trên 1 địa chỉ web khác, dùng URL đầy đủ, ví dụ:
        "https://example.com/jlw31-images/"
      - Dùng {LOT} để mỗi LÔ HÀNG có 1 thư mục ảnh riêng (khuyến nghị khi
@@ -570,7 +572,7 @@ const CONFIG = {
   TITLE_VI_TEMPLATE : "THỐNG KÊ LỖI TRONG QUÁ TRÌNH CHẠY THỬ NGHIỆM PP {LOT}",
   SCRIPT_URL     : "https://script.google.com/macros/s/AKfycbyGQUVjpDrTW52AxOodlfolUNtg_GCVXgDjQ1sdSknNY54B4BWhx5F06StBnb62pPw7/exec",
   IMAGE_BASE_URL: "./images/{LOT}/",
-  IMAGE_EXT      : ".png"
+  IMAGE_EXTS     : [".png", ".jpg"]   // trang sẽ thử lần lượt từng đuôi; hết danh sách mà không có ảnh mới báo "Không có ảnh"
 };
 /* ========================================================================= */
 
@@ -623,9 +625,11 @@ function imageBaseForLot(lotName){
   return CONFIG.IMAGE_BASE_URL;
 }
 
-function imageUrlForId(id){
+// ext: đuôi file cụ thể (vd ".png"). Nếu không truyền thì lấy đuôi đầu tiên trong IMAGE_EXTS
+function imageUrlForId(id, ext){
   if(id === '' || id === null || id === undefined) return '';
-  return imageBaseForLot(CURRENT_LOT) + String(id).trim() + CONFIG.IMAGE_EXT;
+  const useExt = ext || CONFIG.IMAGE_EXTS[0];
+  return imageBaseForLot(CURRENT_LOT) + String(id).trim() + useExt;
 }
 
 let __jsonpCounter = 0;
@@ -871,14 +875,14 @@ function renderRows(rows){
       const fix      = r.Fix     || r.fix     || '';
       const date     = r.Date    || r.date    || '';
       const status   = r.Status  || r.status  || 'NG';
-      const imgSrc   = imageUrlForId(id);
+      const imgSrc   = id ? imageUrlForId(id, CONFIG.IMAGE_EXTS[0]) : '';
 
       const tr = document.createElement('tr');
       tr.style.animationDelay = (Math.min(i, 24) * 0.035) + 's';
       tr.innerHTML = `
         <td class="stt" data-label="#">${i+1}</td>
         <td class="img-cell" data-label="Hình ảnh / 图片">
-          <div class="img-box" id="imgbox-${i}">
+          <div class="img-box" id="imgbox-${i}" data-id="${escapeAttr(id)}" data-ext-idx="0">
             ${imgSrc ? `<img src="${imgSrc}" onerror="handleImgError(${i})" onclick="openLightbox(this.src)">` : ''}
           </div>
         </td>
@@ -899,9 +903,24 @@ function renderRows(rows){
   }
 }
 
+// Ảnh lỗi (không tồn tại với đuôi hiện tại) -> tự thử đuôi tiếp theo trong IMAGE_EXTS,
+// hết danh sách mà vẫn không có ảnh nào tồn tại thì mới báo "Không có ảnh"
 function handleImgError(i){
   const box = document.getElementById('imgbox-' + i);
-  if(box){
+  if(!box) return;
+  const id = box.getAttribute('data-id');
+  let idx = parseInt(box.getAttribute('data-ext-idx'), 10) || 0;
+  idx++;
+  if(id && idx < CONFIG.IMAGE_EXTS.length){
+    box.setAttribute('data-ext-idx', String(idx));
+    const nextSrc = imageUrlForId(id, CONFIG.IMAGE_EXTS[idx]);
+    const img = box.querySelector('img');
+    if(img){
+      img.src = nextSrc;
+    } else {
+      box.innerHTML = `<img src="${nextSrc}" onerror="handleImgError(${i})" onclick="openLightbox(this.src)">`;
+    }
+  } else {
     box.classList.add('empty');
     box.innerHTML = 'Không có ảnh';
   }
