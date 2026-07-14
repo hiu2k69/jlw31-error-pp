@@ -979,11 +979,16 @@ function renderRows(rows){
   const doRender = function(){
     tbody.innerHTML = '';
 
-    if(!rows.length){
-      tbody.innerHTML = `<tr><td colspan="7" class="empty-msg">Không có dữ liệu phù hợp.</td></tr>`;
-      return;
-    }
-
+  if (!rows.length) {
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="7" class="empty-msg">
+        Không có dữ liệu phù hợp.<br>
+        没有符合条件的数据。
+      </td>
+    </tr>`;
+  return;
+}
     rows.forEach((r, i)=>{
       const id       = r.ID || r.id || '';
       const problem  = r.Problem || r.problem || '';
