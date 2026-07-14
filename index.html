@@ -281,6 +281,7 @@
     transition:opacity .3s ease;
   }
   .filter-label{font-size:12.5px; font-weight:700; color:var(--sub); margin-right:2px;}
+  .filter-tags{display:contents;}
   .tag{
     font-size:12.5px; padding:6px 12px; border-radius:20px; font-weight:600;
     display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); color:var(--sub);
@@ -439,8 +440,17 @@
     .code-badge{font-size:20px; padding:8px 14px;}
     body{padding:16px 10px 40px;}
     .plate{padding:16px 18px;}
-    .plate-meta{gap:12px 20px; font-size:12px;}
+    .plate-meta{
+      gap:8px; font-size:12px;
+      flex-direction:column; align-items:flex-start;
+    }
+    .plate-meta span{width:100%;}
     .conn-bar, .toolbar{padding:10px 12px;}
+    .toolbar{flex-direction:column; align-items:flex-start; gap:8px;}
+    .filter-label{width:100%; margin:0;}
+    .filter-tags{
+      display:flex !important; flex-wrap:wrap; gap:8px; width:100%;
+    }
     .tag{font-size:11.5px; padding:5px 10px;}
     .btn{padding:9px 14px; font-size:13px;}
     select#lotSelect{min-width:0; flex:1;}
@@ -561,15 +571,17 @@
 
 <div class="toolbar" id="filterBar">
   <span class="filter-label">Lọc trạng thái / 状态筛选:</span>
-  <span class="tag active" data-filter="ALL" onclick="setFilter('ALL')">
-    Tất cả: <b id="cntALL">0</b>
-  </span>
-  <span class="tag tag-ng" data-filter="NG" onclick="setFilter('NG')">
-    <span class="dot" style="background:var(--ongoing)"></span> NG: <b id="cntNG">0</b>
-  </span>
-  <span class="tag tag-ok" data-filter="OK" onclick="setFilter('OK')">
-    <span class="dot" style="background:var(--ok)"></span> OK: <b id="cntOK">0</b>
-  </span>
+  <div class="filter-tags">
+    <span class="tag active" data-filter="ALL" onclick="setFilter('ALL')">
+      Tất cả: <b id="cntALL">0</b>
+    </span>
+    <span class="tag tag-ng" data-filter="NG" onclick="setFilter('NG')">
+      <span class="dot" style="background:var(--ongoing)"></span> NG: <b id="cntNG">0</b>
+    </span>
+    <span class="tag tag-ok" data-filter="OK" onclick="setFilter('OK')">
+      <span class="dot" style="background:var(--ok)"></span> OK: <b id="cntOK">0</b>
+    </span>
+  </div>
 </div>
 
 <div class="table-wrap">
