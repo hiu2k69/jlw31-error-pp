@@ -418,23 +418,33 @@
       margin-bottom:12px; padding:6px 14px; box-shadow:0 2px 8px rgba(18,38,58,0.06);
     }
     tr:hover{transform:none; box-shadow:0 4px 14px rgba(18,38,58,0.14);}
+    /* Mặc định: nhãn nằm TRÊN, nội dung nằm DƯỚI, căn trái -> dễ đọc với đoạn văn dài
+       (Vấn đề lỗi, Nguyên nhân, Cách khắc phục...) thay vì ép nằm ngang căn phải */
     td{
       border:none; padding:10px 0; font-size:13.5px;
       border-bottom:1px solid #eef1f3;
-      display:flex; justify-content:space-between; align-items:flex-start; gap:14px; text-align:right;
+      text-align:left;
     }
     tr td:last-child{border-bottom:none;}
     td::before{
       content:attr(data-label);
-      font-weight:700; color:var(--sub); font-size:12px;
-      text-align:left; flex-shrink:0; max-width:42%; line-height:1.4;
+      display:block;
+      font-weight:700; color:var(--sub); font-size:11.5px;
+      letter-spacing:.2px; line-height:1.3; margin-bottom:5px;
+    }
+    /* Các trường ngắn (số dòng, ngày, trạng thái) vẫn để dạng 1 hàng cho gọn */
+    td.stt, td.date-cell, td.status-cell{
+      display:flex; justify-content:space-between; align-items:center; gap:14px;
+    }
+    td.stt::before, td.date-cell::before, td.status-cell::before{
+      display:inline; margin-bottom:0; flex-shrink:0;
     }
     td.stt{
-      justify-content:flex-start; font-size:13px; color:var(--steel);
+      font-size:13px; color:var(--steel);
       padding-bottom:4px;
     }
     td.stt::before{content:"Dòng số"; }
-    td.img-cell{justify-content:center;}
+    td.img-cell{display:flex; justify-content:center;}
     td.img-cell::before{display:none;}
     .img-box{width:140px; height:105px;}
     .status-badge{width:auto; min-width:120px;}
@@ -889,8 +899,8 @@ function renderRows(rows){
         <td data-label="Vấn đề lỗi / 不良问题">${escapeHtml(problem)}</td>
         <td data-label="Nguyên nhân / 原因分析">${escapeHtml(cause)}</td>
         <td data-label="Cách khắc phục / 改善对策">${escapeHtml(fix)}</td>
-        <td data-label="Ngày xảy ra / 问题发生日期">${escapeHtml(formatDate(date))}</td>
-        <td data-label="Tình trạng / 后续状态"><span class="status-badge ${statusClass(status)}">${statusLabel(status)}</span></td>
+        <td class="date-cell" data-label="Ngày xảy ra / 问题发生日期">${escapeHtml(formatDate(date))}</td>
+        <td class="status-cell" data-label="Tình trạng / 后续状态"><span class="status-badge ${statusClass(status)}">${statusLabel(status)}</span></td>
       `;
       tbody.appendChild(tr);
     });
