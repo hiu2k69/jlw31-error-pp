@@ -435,6 +435,104 @@
     min-height:18px; transition:opacity .2s ease;
   }
 
+  /* ===== dialog: lịch sử chạy PP ===== */
+  .history-overlay{
+    display:none; position:fixed; inset:0; z-index:90;
+    align-items:flex-start; justify-content:center;
+    background:rgba(10,18,26,0.55);
+    padding:6vh 16px;
+    overflow-y:auto;
+    opacity:0; transition:opacity .25s ease;
+  }
+  .history-overlay.open{display:flex; opacity:1;}
+  .history-dialog{
+    width:min(560px, 100%);
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 24px 60px rgba(10,18,26,0.4);
+    transform:translateY(-16px) scale(0.97);
+    opacity:0;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+  }
+  .history-overlay.open .history-dialog{transform:translateY(0) scale(1); opacity:1;}
+  .history-head{
+    position:relative;
+    background:var(--navy);
+    padding:20px 24px 18px;
+    overflow:hidden;
+  }
+  .history-head::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(45deg, var(--caution) 0 20px, var(--navy) 20px 40px);
+    opacity:0.08;
+  }
+  .history-head-inner{position:relative; z-index:1; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .history-head-zh{color:#9db6cc; font-size:11.5px; letter-spacing:1px; margin:0 0 4px;}
+  .history-head-title{color:#fff; font-size:17px; font-weight:800; margin:0; line-height:1.4;}
+  .history-head-title .hl{color:var(--caution);}
+  .history-close{
+    flex-shrink:0; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(255,255,255,0.12); color:#fff; font-size:16px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .history-close:hover{background:rgba(255,255,255,0.24); transform:rotate(90deg);}
+  .history-body{
+    padding:8px 10px 14px;
+    max-height:62vh;
+    overflow-y:auto;
+  }
+  .history-list{list-style:none; margin:0; padding:0;}
+  .history-item{
+    display:flex; align-items:center; gap:12px;
+    padding:11px 14px;
+    border-radius:8px;
+    margin:4px 6px;
+    animation:fadeSlideUp .35s cubic-bezier(.2,.8,.2,1) both;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .history-item:hover{background:#f2f6f9; transform:translateX(2px);}
+  .history-item.current{
+    background:#fdf3e2;
+    border:1px solid rgba(232,151,31,0.4);
+  }
+  .history-item.current:hover{background:#fbecd2;}
+  .history-dot-col{
+    flex-shrink:0; width:34px; display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .history-dot{
+    width:10px; height:10px; border-radius:50%; background:var(--steel); flex-shrink:0;
+    box-shadow:0 0 0 3px #fff, 0 0 0 4px var(--line);
+  }
+  .history-item.current .history-dot{background:var(--caution); box-shadow:0 0 0 3px #fff, 0 0 0 4px var(--caution);}
+  .history-dot-line{width:2px; flex:1; background:var(--line); margin-top:2px;}
+  .history-item:last-child .history-dot-line{display:none;}
+  .history-main{flex:1; min-width:0;}
+  .history-line1{font-size:13.5px; color:var(--ink); line-height:1.4;}
+  .history-line1 b{color:var(--navy); font-family:"Consolas",monospace; letter-spacing:.3px;}
+  .history-line1 .hdate{color:var(--steel); font-weight:700;}
+  .history-sub{font-size:11.5px; color:var(--sub); margin-top:2px;}
+  .history-badge{
+    flex-shrink:0; font-size:11px; font-weight:800; padding:4px 10px; border-radius:12px; color:#fff;
+    white-space:nowrap;
+  }
+  .history-badge.st-done{background:var(--ok);}
+  .history-badge.st-ongoing{background:var(--ongoing);}
+  .history-badge.st-now{background:var(--caution-dark);}
+  .history-foot{
+    padding:12px 24px 18px; border-top:1px solid var(--line);
+    font-size:11.5px; color:var(--sub); text-align:center;
+  }
+
+  @media (max-width:520px){
+    .history-overlay{padding:0; align-items:flex-end;}
+    .history-dialog{width:100%; border-radius:16px 16px 0 0; max-height:88vh; display:flex; flex-direction:column;}
+    .history-body{flex:1;}
+    .history-line1{font-size:13px;}
+  }
+
   @media (max-width:700px){
     .vi{font-size:18px;}
     .code-badge{font-size:20px; padding:8px 14px;}
@@ -564,6 +662,10 @@
       </select>
     </div>
   </div>
+<button class="btn ghost" id="historyBtn" onclick="openHistoryDialog()">
+  <span>🗓️</span>
+  Lịch sử chạy PP / 试产历史
+</button>
 <button class="btn ghost" id="reloadBtn" onclick="loadLotList(true)">
   <span class="refresh-icon">↻</span>
   Tải lại từ Sheet / 从 Sheet 重新加载
@@ -604,6 +706,24 @@
 <footer>Trang lấy dữ liệu chữ từ Google Sheet. Hình ảnh được lấy trực tiếp theo tên file "ID.png" hoặc "ID.jpg" trong thư mục ảnh cấu hình bên dưới.</footer>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src=""></div>
+
+<div class="history-overlay" id="historyOverlay" onclick="if(event.target===this) closeHistoryDialog()">
+  <div class="history-dialog">
+    <div class="history-head">
+      <div class="history-head-inner">
+        <div>
+          <p class="history-head-zh">试产历史记录</p>
+          <p class="history-head-title" id="historyHeadTitle">Lịch sử chạy PP</p>
+        </div>
+        <button class="history-close" onclick="closeHistoryDialog()">✕</button>
+      </div>
+    </div>
+    <div class="history-body">
+      <ul class="history-list" id="historyList"></ul>
+    </div>
+    <div class="history-foot">Dữ liệu minh họa / 示例数据 — sẽ đồng bộ theo Google Sheet khi kết nối thực tế.</div>
+  </div>
+</div>
 
 <div class="tab-loading-overlay" id="tabLoadingOverlay">
   <div class="tab-loading-card">
@@ -1099,6 +1219,87 @@ function openLightbox(src){
 }
 function closeLightbox(){
   document.getElementById('lightbox').classList.remove('open');
+}
+
+/* ===== dialog: lịch sử chạy PP (dữ liệu minh họa) ===== */
+const HISTORY_DEMO = [
+  {
+    lot: 'JLW31',
+    date: '04/07/2026',
+    status: 'done',
+    note: 'PP đã hoàn tất, chuẩn bị PS. Chú ý phần mạch và thao tác của công nhân. / PP已完成，准备PS，请特别留意电路部分及员工操作。'
+  },
+  {
+    lot: 'DRH43',
+    date: '13/07/2026',
+    status: 'done',
+    note: 'PP đã hoàn tất, chuẩn bị PS. Chú ý phần mạch và thao tác của công nhân. / PP已完成，准备PS，请特别留意电路部分及员工操作。'
+  },
+  {
+    lot: 'DRH44',
+    date: '17/07/2026',
+    status: 'done',
+    note: 'PP đã hoàn tất, chuẩn bị PS. Chú ý phần mạch và thao tác của công nhân. / PP已完成，准备PS，请特别留意电路部分及员工操作。'
+  },
+  {
+    lot: 'DRH41',
+    date: '22/07/2026',
+    status: 'now',
+    note: 'Đang chạy PP, vẫn còn nhiều lỗi ở phần mạch và cửa, đang khắc phục. / PP进行中，电路及门结构仍有较多不良，正在改善中。'
+  },
+  {
+    lot: 'FLK83',
+    date: '14/07/2026',
+    status: 'done',
+    note: 'PP đã hoàn tất, chuẩn bị PS. Chú ý bavia và các lỗi nhựa. / PP已完成，准备PS，请特别留意披锋及塑胶不良。'
+  },
+  {
+    lot: 'V1983',
+    date: '15/07/2026',
+    status: 'done',
+    note: 'PP đã hoàn tất, chuẩn bị PS. Chú ý hiện tượng rạn nhựa và bavia. / PP已完成，准备PS，请特别留意塑胶裂纹及披锋。'
+  }
+];
+
+function historyBadge(status){
+  if(status === 'now')  return '<span class="history-badge st-now">ĐANG CHẠY</span>';
+  if(status === 'ng')   return '<span class="history-badge st-ongoing">NG</span>';
+  return '<span class="history-badge st-done">OK</span>';
+}
+
+function renderHistoryList(){
+  const list = document.getElementById('historyList');
+  list.innerHTML = HISTORY_DEMO.map(function(h, i){
+    const isCurrent = h.status === 'now';
+    return `
+      <li class="history-item${isCurrent ? ' current' : ''}" style="animation-delay:${i*0.045}s">
+        <div class="history-dot-col">
+          <span class="history-dot"></span>
+          <span class="history-dot-line"></span>
+        </div>
+        <div class="history-main">
+          <div class="history-line1"><b>${escapeHtml(h.lot)}</b> chạy PP ngày <span class="hdate">${escapeHtml(h.date)}</span></div>
+          <div class="history-sub">${escapeHtml(h.note)}</div>
+        </div>
+        ${historyBadge(h.status)}
+      </li>`;
+  }).join('');
+}
+
+function openHistoryDialog(){
+  const current = HISTORY_DEMO.find(h => h.status === 'now') || HISTORY_DEMO[0];
+  document.getElementById('historyHeadTitle').innerHTML =
+    '<span class="hl">' + escapeHtml(current.lot) + '</span> chạy PP ngày ' + escapeHtml(current.date);
+  renderHistoryList();
+  document.getElementById('historyOverlay').classList.add('open');
+  document.addEventListener('keydown', historyEscHandler);
+}
+function closeHistoryDialog(){
+  document.getElementById('historyOverlay').classList.remove('open');
+  document.removeEventListener('keydown', historyEscHandler);
+}
+function historyEscHandler(e){
+  if(e.key === 'Escape') closeHistoryDialog();
 }
 
 /* ===== màn hình loading toàn trang lúc mới vào (chỉ hiện ở lần tải đầu tiên) ===== */
